@@ -153,6 +153,9 @@ func DecodeOneMessage(r io.Reader, config DecoderConfig) (msg Message, err error
 	var msgType MessageType
 	var packetRemaining int32
 	msgType, packetRemaining, err = hdr.Decode(r)
+	if err != nil {
+		return
+	}
 
 	msg, err = NewMessage(msgType)
 	if err != nil {
