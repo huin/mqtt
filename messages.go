@@ -21,7 +21,7 @@ func (hdr *Header) Encode(w io.Writer, msgType MessageType, remainingLength int3
 	buf := new(bytes.Buffer)
 	err := hdr.encodeInto(buf, msgType, remainingLength)
 	if err != nil {
-					return err
+		return err
 	}
 	_, err = w.Write(buf.Bytes())
 	return err
