@@ -18,6 +18,16 @@ type Header struct {
 }
 
 func (hdr *Header) Encode(w io.Writer, msgType MessageType, remainingLength int32) error {
+	buf := new(bytes.Buffer)
+	err := hdr.encodeInto(buf, msgType, remainingLength)
+	if err != nil {
+					return err
+	}
+	_, err = w.Write(buf.Bytes())
+	return err
+}
+
+func (hdr *Header) encodeInto(buf *bytes.Buffer, msgType MessageType, remainingLength int32) error {
 	if !hdr.QosLevel.IsValid() {
 		return badQosError
 	}
@@ -25,15 +35,13 @@ func (hdr *Header) Encode(w io.Writer, msgType MessageType, remainingLength int3
 		return badMsgTypeError
 	}
 
-	buf := new(bytes.Buffer)
 	val := byte(msgType) << 4
 	val |= (boolToByte(hdr.DupFlag) << 3)
 	val |= byte(hdr.QosLevel) << 1
 	val |= boolToByte(hdr.Retain)
 	buf.WriteByte(val)
 	encodeLength(remainingLength, buf)
-	_, err := w.Write(buf.Bytes())
-	return err
+	return nil
 }
 
 func (hdr *Header) Decode(r io.Reader) (msgType MessageType, remainingLength int32, err error) {
@@ -105,12 +113,14 @@ func writeMessage(w io.Writer, msgType MessageType, hdr *Header, payloadBuf *byt
 		return msgTooLongError
 	}
 
-	err := hdr.Encode(w, msgType, int32(totalPayloadLength))
+	buf := new(bytes.Buffer)
+	err := hdr.encodeInto(buf, msgType, int32(totalPayloadLength))
 	if err != nil {
 		return err
 	}
 
-	_, err = w.Write(payloadBuf.Bytes())
+	buf.Write(payloadBuf.Bytes())
+	_, err = w.Write(buf.Bytes())
 
 	return err
 }
