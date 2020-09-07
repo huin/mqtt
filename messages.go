@@ -221,13 +221,15 @@ func (msg *Connect) Decode(r io.Reader, hdr Header, packetRemaining int32, confi
 // ConnAck represents an MQTT CONNACK message.
 type ConnAck struct {
 	Header
+	SessionPresent bool
 	ReturnCode ReturnCode
 }
 
 func (msg *ConnAck) Encode(w io.Writer) (err error) {
 	buf := new(bytes.Buffer)
 
-	buf.WriteByte(byte(0)) // Reserved byte.
+	flags := 0x1 & boolToByte(msg.SessionPresent)
+	buf.WriteByte(flags)
 	setUint8(uint8(msg.ReturnCode), buf)
 
 	return writeMessage(w, MsgConnAck, &msg.Header, buf, 0)
@@ -240,7 +242,7 @@ func (msg *ConnAck) Decode(r io.Reader, hdr Header, packetRemaining int32, confi
 
 	msg.Header = hdr
 
-	getUint8(r, &packetRemaining) // Skip reserved byte.
+	msg.SessionPresent = (getUint8(r, &packetRemaining) & 0x01) > 0
 	msg.ReturnCode = ReturnCode(getUint8(r, &packetRemaining))
 	if !msg.ReturnCode.IsValid() {
 		return badReturnCodeError
