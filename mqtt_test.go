@@ -82,13 +82,14 @@ func TestEncodeDecode(t *testing.T) {
 		{
 			Comment: "CONNACK message",
 			Msg: &ConnAck{
+				SessionPresent:true,
 				ReturnCode: RetCodeBadUsernameOrPassword,
 			},
 			Expected: gbt.InOrder{
 				gbt.Named{"Header byte", gbt.Literal{0x20}},
 				gbt.Named{"Remaining length", gbt.Literal{2}},
 
-				gbt.Named{"Reserved byte", gbt.Literal{0}},
+				gbt.Named{"Reserved byte", gbt.Literal{1}},
 				gbt.Named{"Return code", gbt.Literal{4}},
 			},
 		},
