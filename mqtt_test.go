@@ -88,8 +88,8 @@ func TestEncodeDecode(t *testing.T) {
 			Expected: gbt.InOrder{
 				gbt.Named{"Header byte", gbt.Literal{0x20}},
 				gbt.Named{"Remaining length", gbt.Literal{2}},
-
-				gbt.Named{"Reserved byte", gbt.Literal{1}},
+				// Session Present: bit 0 of the Connect Acknowledge Flags
+				gbt.Named{"Connect Acknowledge Flags", gbt.Literal{1}},
 				gbt.Named{"Return code", gbt.Literal{4}},
 			},
 		},
